@@ -11,7 +11,7 @@ using Mersenne61 = math::Fp<61>;
 
 int main() {
  
-    auto prg = util::PRG::Create();
+    auto prg = util::PRG::Create("seed");
     auto x = Mersenne61::Random(prg);
     auto y = Mersenne61::Random(prg);
     auto xy = x * y;
@@ -20,14 +20,11 @@ int main() {
     cout << "y = " << y << endl;
     cout << "x * y = " << xy << endl;
     
-    uint n = 8;
-    auto t = floor(n / 2); // t < n / 2
+    uint n = 100;
+    auto t = floor((n - 1) / 2); // t < n / 2
 
     const auto x_shares_t = ss::ShamirShare(x, t, n, prg);
     const auto y_shares_t = ss::ShamirShare(y, t, n, prg);
-    const auto xy_shares_t_direct = ss::ShamirShare(xy, t, n, prg);
-    auto xy_shares_t = math::Vec<Mersenne61>(n);
-    
     auto z_shares = std::vector<math::Vec<Mersenne61>>();
     
     for (uint i = 0; i < n; ++i) {
@@ -39,8 +36,9 @@ int main() {
         z_shares.emplace_back(zi_shares);
     }
 
+    auto xy_shares_t = math::Vec<Mersenne61>(n);
+
     for (uint i = 0; i < n; ++i) {
-        
         // Las parties computan localmente [xy]_t
         auto zi_shares = math::Vec<Mersenne61>(n);
         for (uint j = 0; j < n; ++j) {
