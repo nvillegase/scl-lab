@@ -160,7 +160,5 @@ class BGWProtocol : public scl::proto::Protocol {
   const int m_t;
   const int m_n;
   Mersenne61 m_xy;
-  Mersenne61 m_share_x;
-  Mersenne61 m_share_y;
 
 };
