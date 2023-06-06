@@ -1,6 +1,6 @@
-# Minimal example of a protocol using SCL
+# Protocol implementations using SCL library
 
-This repository contains a simple protocol example implemented using SCL.
+This repository contains sample implementations of MPC protocols using the SCL library.
 
 ## Setup
 
@@ -10,8 +10,7 @@ this repository requires the latest version 6.2.0 in order to run
 
 ## Building
 
-Once SCL have been installed, it should be straightforward to build the code in
-this repo.
+Once SCL have been installed, navigate to any protocol sub-folder, and build:
 
 ```
 $ cmake . -B build
@@ -23,21 +22,4 @@ directory.
 ```
 $ cd build
 build/$ ./run.x -help
-
-Usage: ./run.x -id int -conf string [options ...]
-
-Required arguments
- -id 'int'          ID of this party. 
- -conf 'string'     network config. 
-
-build/$
 ```
-
-An example of a network config is provided. See `3_parties.txt`. To run the
-protocol, provided the required arguments listed above. For example,
-
-```
-build/$ ./run.x -id 0 -conf ../3_parties.txt
-```
-
-to run party 0.
