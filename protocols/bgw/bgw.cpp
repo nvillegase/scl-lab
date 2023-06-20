@@ -38,7 +38,7 @@ class BGWProtocol : public scl::proto::Protocol {
     if (m_party_id == 0) {
 
       auto x = Mersenne61::Random(prg);
-      cout << "Sampled x = " << x << endl;
+      cout << "[Party 0] Sampled x = " << x << endl;
 
       const auto x_shares_t = ss::ShamirShare(x, m_t, m_n, prg);
 
@@ -46,14 +46,14 @@ class BGWProtocol : public scl::proto::Protocol {
         scl::net::Packet pkt_send;
         pkt_send << x_shares_t[i];
         env.network.Party(i)->Send(pkt_send);
-        cout << "Sending " << x_shares_t[i] << " to party " << i << endl;
+        cout << "[Party 0] Sending " << x_shares_t[i] << " to party " << i << endl;
       }
 
     }
     else if (m_party_id == 1) {
 
       auto y = Mersenne61::Random(prg);
-      cout << "Sampled y = " << y << endl;
+      cout << "[Party 1] Sampled y = " << y << endl;
 
       const auto y_shares_t = ss::ShamirShare(y, m_t, m_n, prg);
 
@@ -61,7 +61,7 @@ class BGWProtocol : public scl::proto::Protocol {
         scl::net::Packet pkt_send;
         pkt_send << y_shares_t[i];
         env.network.Party(i)->Send(pkt_send);
-        cout << "Sending " << y_shares_t[i] << " to party " << i << endl;
+        cout << "[Party 1] Sending " << y_shares_t[i] << " to party " << i << endl;
       }
 
     }
@@ -73,7 +73,7 @@ class BGWProtocol : public scl::proto::Protocol {
     }
     auto& pkt_0 = pkt_recv_0.value();
     auto x_share_t = pkt_0.Read<Mersenne61>();
-    cout << "Received share of x: " << x_share_t << endl;
+    cout << "[Party " << m_party_id << "] Received share of x: " << x_share_t << endl;
 
     // Receive the share of Y:
     auto pkt_recv_1 = env.network.Party(1)->Recv();
@@ -82,10 +82,10 @@ class BGWProtocol : public scl::proto::Protocol {
     }
     auto& pkt_1 = pkt_recv_1.value();
     auto y_share_t = pkt_1.Read<Mersenne61>();
-    cout << "Received share of y: " << y_share_t << endl;
+    cout << "[Party " << m_party_id << "] Received share of y: " << y_share_t << endl;
 
     auto xy_share_2t = x_share_t * y_share_t;
-    cout << "xy_share_2t = " << xy_share_2t << endl;
+    cout << "[Party " << m_party_id << "] xy_share_2t = " << xy_share_2t << endl;
 
     auto zi_shares = ss::ShamirShare(xy_share_2t, m_t, m_n, prg);
 
@@ -94,7 +94,7 @@ class BGWProtocol : public scl::proto::Protocol {
       scl::net::Packet pkt_send;
       pkt_send << zi_shares[i];
       env.network.Party(i)->Send(pkt_send);
-      cout << "Sending " << zi_shares[i] << " to party " << i << endl;
+      cout << "[Party " << m_party_id << "] Sending " << zi_shares[i] << " to party " << i << endl;
     }
 
     // Shares from other parties are received:
@@ -111,7 +111,7 @@ class BGWProtocol : public scl::proto::Protocol {
 
     auto xy_share_t = ss::ShamirRecoverP(zi_shares_recv);
 
-    cout << "xy_share_t = " << xy_share_t << endl;
+    cout << "[Party " << m_party_id << "] xy_share_t = " << xy_share_t << endl;
 
     // For reconstruction of xy, send to party 0:
     scl::net::Packet pkt_send;

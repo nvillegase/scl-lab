@@ -3,6 +3,7 @@
 #include <scl/net/tcp_channel.h>
 #include <scl/protocol/base.h>
 #include <scl/util/cmdline.h>
+#include "scl/protocol/env.h"
 
 #include "bgw.cpp"
 
@@ -13,14 +14,22 @@ void BGWExecution(const util::ProgramOptions& opts) {
   // Get the ID of this party and the network config filename that was passed to
   // the program on the commandline.
   auto id = opts.Get<std::size_t>("id");
-  auto conf = opts.Get("conf");
+  auto n = opts.Get<std::size_t>("n");
+  auto t = opts.Get<std::size_t>("t");
+
+  if (2*t + 1 > n) {
+    throw std::logic_error("Invalid threshold");
+  }
+
+//   auto conf = opts.Get("conf");
 
   // Create a NetworkConfig object from the file.
-  auto network_conf = net::NetworkConfig::Load(id, std::string(conf));
+//   auto network_conf = net::NetworkConfig::Load(id, std::string(conf));
 
   // Create a network. This takes care of connecting all the parties to each
   // other, using the information in the network config.
-  auto network = net::Network::Create<net::TcpChannel<>>(network_conf);
+  auto fakenetwork = net::FakeNetwork::Create(0, 100);
+//   auto networks = net::CreateMemoryBackedNetwork(100);
 
   // This lambda will be called whenever our protocol generates any output.
   auto output_cb = [](std::any output) {
@@ -29,7 +38,7 @@ void BGWExecution(const util::ProgramOptions& opts) {
   };
 
   // Evaluate the protocol for 5 rounds.
-  proto::Evaluate(BGWProtocol::Create((int)id, 2, 5), network, output_cb);
+  proto::Evaluate(BGWProtocol::Create((int)id, t, n), fakenetwork.my_network, output_cb);
 }
 
 int main(int argc, char** argv) {
@@ -38,7 +47,9 @@ int main(int argc, char** argv) {
   const auto opts =
       util::ProgramOptions::Parser{}
           .Add(util::ProgramArg::Required("id", "int", "ID of this party"))
-          .Add(util::ProgramArg::Required("conf", "string", "network config"))
+        //   .Add(util::ProgramArg::Required("conf", "string", "network config"))
+          .Add(util::ProgramArg::Required("n", "int", "Number of parties"))
+          .Add(util::ProgramArg::Required("t", "int", "Secret-sharing threshold"))
           .Parse(argc, argv);
 
   BGWExecution(opts);
