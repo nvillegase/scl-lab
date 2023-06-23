@@ -34,6 +34,7 @@ class BGWProtocol : public scl::proto::Protocol {
   std::unique_ptr<scl::proto::Protocol> Run(scl::proto::Env& env) override {
 
     auto prg = util::PRG::Create(std::to_string(m_party_id));
+    scl::net::Packet pkt_send;
     
     if (m_party_id == 0) {
 
@@ -43,10 +44,10 @@ class BGWProtocol : public scl::proto::Protocol {
       const auto x_shares_t = ss::ShamirShare(x, m_t, m_n, prg);
 
       for (int i = 0; i < m_n; ++i) {
-        scl::net::Packet pkt_send;
         pkt_send << x_shares_t[i];
         env.network.Party(i)->Send(pkt_send);
         cout << "[Party 0] Sending " << x_shares_t[i] << " to party " << i << endl;
+        pkt_send.ResetWritePtr();
       }
 
     }
@@ -58,10 +59,10 @@ class BGWProtocol : public scl::proto::Protocol {
       const auto y_shares_t = ss::ShamirShare(y, m_t, m_n, prg);
 
       for (int i = 0; i < m_n; ++i) {
-        scl::net::Packet pkt_send;
         pkt_send << y_shares_t[i];
         env.network.Party(i)->Send(pkt_send);
         cout << "[Party 1] Sending " << y_shares_t[i] << " to party " << i << endl;
+        pkt_send.ResetWritePtr();
       }
 
     }
@@ -91,10 +92,10 @@ class BGWProtocol : public scl::proto::Protocol {
 
     // Shares of zi are distributed to all other parties:
     for (int i = 0; i < m_n; ++i) {
-      scl::net::Packet pkt_send;
       pkt_send << zi_shares[i];
       env.network.Party(i)->Send(pkt_send);
       cout << "[Party " << m_party_id << "] Sending " << zi_shares[i] << " to party " << i << endl;
+      pkt_send.ResetWritePtr();
     }
 
     // Shares from other parties are received:
@@ -114,9 +115,9 @@ class BGWProtocol : public scl::proto::Protocol {
     cout << "[Party " << m_party_id << "] xy_share_t = " << xy_share_t << endl;
 
     // For reconstruction of xy, send to party 0:
-    scl::net::Packet pkt_send;
     pkt_send << xy_share_t;
     env.network.Party(0)->Send(pkt_send);
+    pkt_send.ResetWritePtr();
     
     auto xy_shares_t = math::Vec<Mersenne61>(m_n);
 
@@ -134,9 +135,9 @@ class BGWProtocol : public scl::proto::Protocol {
 
       // Then, share the result with the other parties:
       for (int i = 0; i < m_n; ++i) {
-        scl::net::Packet pkt_send;
         pkt_send << xy;
         env.network.Party(i)->Send(pkt_send);
+        pkt_send.ResetWritePtr();
       }
     }
 

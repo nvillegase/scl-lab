@@ -28,8 +28,8 @@ void BGWExecution(const util::ProgramOptions& opts) {
 
   // Create a network. This takes care of connecting all the parties to each
   // other, using the information in the network config.
-  auto fakenetwork = net::FakeNetwork::Create(0, 100);
-//   auto networks = net::CreateMemoryBackedNetwork(100);
+  // auto fakenetwork = net::FakeNetwork::Create(id, 100);
+  auto networks = net::CreateMemoryBackedNetwork(n);
 
   // This lambda will be called whenever our protocol generates any output.
   auto output_cb = [](std::any output) {
@@ -37,8 +37,7 @@ void BGWExecution(const util::ProgramOptions& opts) {
     std::cout << "xy = " << xy << endl;
   };
 
-  // Evaluate the protocol for 5 rounds.
-  proto::Evaluate(BGWProtocol::Create((int)id, t, n), fakenetwork.my_network, output_cb);
+  proto::Evaluate(BGWProtocol::Create((int)id, t, n), networks[id], output_cb);
 }
 
 int main(int argc, char** argv) {
