@@ -2,54 +2,36 @@
 #include <scl/net/network.h>
 #include <scl/net/tcp_channel.h>
 #include <scl/protocol/base.h>
-#include <scl/util/cmdline.h>
 #include "scl/protocol/env.h"
+#include <scl/math/fp.h>
 
-#include "bgw.cpp"
+#include "../utils.h"
+#include "bgw.cc"
 
-using namespace scl;
 
-void BGWExecution(const util::ProgramOptions& opts) {
+extern "C" {
+  uint64_t BGWExec(int local_party_id, int n, int t, char* conf, uint64_t x_share_t, uint64_t y_share_t);
+}
 
-  // Get the ID of this party and the network config filename that was passed to
-  // the program on the commandline.
-  auto id = opts.Get<std::size_t>("id");
-  auto n = opts.Get<std::size_t>("n");
-  auto t = opts.Get<std::size_t>("t");
+
+uint64_t BGWExec(int local_party_id, int n, int t, char* conf, uint64_t x_share_t, uint64_t y_share_t) {
 
   if (2*t + 1 > n) {
     throw std::logic_error("Invalid threshold");
   }
 
-//   auto conf = opts.Get("conf");
+  auto f_x_share_t = Mersenne61::FromString(int_to_hex(x_share_t));
+  auto f_y_share_t = Mersenne61::FromString(int_to_hex(y_share_t));
 
   // Create a NetworkConfig object from the file.
-//   auto network_conf = net::NetworkConfig::Load(id, std::string(conf));
+  auto network_conf = scl::net::NetworkConfig::Load(local_party_id, conf);
+  auto network = scl::net::Network::Create<net::TcpChannel<>>(network_conf);
 
-  // Create a network. This takes care of connecting all the parties to each
-  // other, using the information in the network config.
-  // auto fakenetwork = net::FakeNetwork::Create(id, 100);
-  auto networks = net::CreateMemoryBackedNetwork(n);
+  Mersenne61 output_share;
+  proto::Evaluate(BGWProtocol::Create(t, n, f_x_share_t, f_y_share_t, output_share), network);
 
-  // This lambda will be called whenever our protocol generates any output.
-  auto output_cb = [](std::any output) {
-    auto xy = std::any_cast<Mersenne61>(output);
-    std::cout << "xy = " << xy << endl;
-  };
+  uint64_t int_value = std::stoull(output_share.ToString(), nullptr, 16);
 
-  proto::Evaluate(BGWProtocol::Create((int)id, t, n), networks[id], output_cb);
-}
+  return int_value;
 
-int main(int argc, char** argv) {
-  // This adds some command line arguments to our program, of which there are
-  // only two :)
-  const auto opts =
-      util::ProgramOptions::Parser{}
-          .Add(util::ProgramArg::Required("id", "int", "ID of this party"))
-        //   .Add(util::ProgramArg::Required("conf", "string", "network config"))
-          .Add(util::ProgramArg::Required("n", "int", "Number of parties"))
-          .Add(util::ProgramArg::Required("t", "int", "Secret-sharing threshold"))
-          .Parse(argc, argv);
-
-  BGWExecution(opts);
 }

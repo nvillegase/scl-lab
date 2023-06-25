@@ -1,5 +1,5 @@
 cmake_minimum_required( VERSION 3.14 )
-project(sclbgw)
+project(sclssnd)
 
 set(CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -march=native -Wall -Wextra -pedantic -Werror -std=gnu++17 -O2")
@@ -14,10 +14,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
 set(SOURCE_FILES
   main.cc
-  bgw.cc
+  ssnd.cc
 )
 
-add_library(sclbgw SHARED ${SOURCE_FILES})
+add_library(sclssnd SHARED ${SOURCE_FILES})
 
-target_link_libraries(sclbgw ${SCL})
-target_link_libraries(sclbgw ${GMP})
+target_link_libraries(sclssnd ${SCL})
+target_link_libraries(sclssnd ${GMP})
