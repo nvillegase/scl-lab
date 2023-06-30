@@ -1,5 +1,8 @@
 import sys
 import ctypes
+import os
+
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 if __name__ == '__main__':
 
@@ -12,21 +15,21 @@ if __name__ == '__main__':
 
     # Sample Share and Distribute Protocol
     # uint64_t SSNDExec(int local_party_id, int sending_party_id, int n, int t, char* conf);
-    sclssnd = ctypes.CDLL('./ssnd/build/libsclssnd.so')
+    sclssnd = ctypes.CDLL('./libsclssnd.so')
     ssnd = sclssnd.SSNDExec
     ssnd.argtypes = (ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_char_p, ctypes.c_uint64)
     ssnd.restype = ctypes.c_int64
     
     # BGW protocol
     # uint64_t BGWExec(int local_party_id, int n, int t, char* conf, uint64_t x_share_t, uint64_t y_share_t);
-    sclbgw = ctypes.CDLL('./bgw/build/libsclbgw.so')
+    sclbgw = ctypes.CDLL('./libsclbgw.so')
     bgw = sclbgw.BGWExec
     bgw.argtypes = (ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_char_p, ctypes.c_uint64, ctypes.c_uint64)
     bgw.restype = ctypes.c_int64
     
     # Shamir reconstruct
     # uint64_t SRSQExec(int local_party_id, uint64_t share, int t, int n, char* conf);
-    sclsrsq = ctypes.CDLL('./srsq/build/libsclsrsq.so')
+    sclsrsq = ctypes.CDLL('./libsclsrsq.so')
     srsq = sclsrsq.SRSQExec
     srsq.argtypes = (ctypes.c_int, ctypes.c_uint64, ctypes.c_int, ctypes.c_int, ctypes.c_char_p)
     srsq.restype = ctypes.c_int64
